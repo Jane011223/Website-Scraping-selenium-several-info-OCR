@@ -24,11 +24,10 @@ number_bedrooms = []
 number_bathrooms = []
 addresses = []
 parkings = []
-cellars = []
+descriptions = []
 contact_names = []
 phone_numbers = []
 date_publications = []
-add_expenses = []
 
 name_publication_path = "/html/body/app-root/adview-index/div/div[2]/div/div[1]/div[1]/adview-price-info/div/h1"
 price_path = "/html/body/app-root/adview-index/div/div[2]/div/div[1]/div[1]/adview-price-info/div/div[1]/p[1]"
@@ -37,12 +36,11 @@ number_bedroom_path = "/html/body/app-root/adview-index/div/div[2]/div/div[1]/ad
 number_bathroom_path = "/html/body/app-root/adview-index/div/div[2]/div/div[1]/adview-features/div/div/div[5]/p[2]"
 address_path = "/html/body/app-root/adview-index/div/div[2]/div/div[1]/div[1]/adview-price-info/div/div[2]/div[1]/p"
 parking_path = "/html/body/app-root/adview-index/div/div[2]/div/div[1]/adview-features/div/div/div[7]/p[2]"
-cellar_path = ""
+description_path = "/html/body/app-root/adview-index/div/div[2]/div/div[1]/adview-description/div/p"
 contact_name_path = "/html/body/app-root/adview-index/div/div[2]/div/div[2]/div/adview-publisher/div/adview-user-avatar/div/div[2]/p"
 phone_btn_path = "/html/body/app-root/adview-index/div/div[2]/div/div[2]/div/adview-publisher/div/div[1]/adview-publisher-button/adview-phone-button/button"
 phone_num_path = "/html/body/app-root/adview-index/div/div[2]/div/div[2]/div/adview-publisher/div/div[1]/adview-publisher-button/adview-phone-button/div/img[2]"
 date_publication_path = "/html/body/app-root/adview-index/div/div[2]/div/div[1]/div[1]/adview-price-info/div/div[2]/div[2]/p"
-add_expense_path = ""
 
 def log_in():
     driver.get(LOGIN_URL)
@@ -61,8 +59,8 @@ def log_in():
     time.sleep(10)
     
 def scrape_eachlink(link):
-    driver.get(link)
-    time.sleep(5)
+    print(link)
+    
     
     name_publication = ""
     price = ""
@@ -71,30 +69,75 @@ def scrape_eachlink(link):
     number_bathroom = ""
     address = ""
     parking = ""
-    cellar = ""
+    description = ""
     contact_name = ""
     phone_number = ""
     date_publication = ""
-    add_expense = ""
            
     try:
-        name_publication = driver.find_element(By.XPATH, name_publication_path).get_attribute('innerHTML')
-        price = driver.find_element(By.XPATH, price_path).get_attribute('innerHTML')
-        sqr_meter = driver.find_element(By.XPATH, sqr_meter_path).get_attribute('innerHTML')
-        number_bedroom = driver.find_element(By.XPATH, number_bedroom_path).get_attribute('innerHTML')
-        number_bathroom = driver.find_element(By.XPATH, number_bathroom_path).get_attribute('innerHTML')
-        address = driver.find_element(By.XPATH, address_path).get_attribute('innerHTML')    
-        parking = driver.find_element(By.XPATH, parking_path).get_attribute('innerHTML')
-        cellar = driver.find_element(By.XPATH, cellar_path).get_attribute('innerHTML')
-        contact_name = driver.find_element(By.XPATH, contact_name_path).get_attribute('innerHTML')
-        date_publication = driver.find_element(By.XPATH, date_publication_path).get_attribute('innerHTML')
-        add_expense = driver.find_element(By.XPATH, add_expense_path).get_attribute('innerHTML')
+        driver.get(link)
+        time.sleep(5)
         
-        phone_btn = driver.find_element(By.XPATH, phone_btn_path)
-        phone_btn.click()
-        time.sleep(10)
-        phone_num_img = driver.find_element(By.XPATH, phone_num_path)
-        phone_number = get_str_from_img(phone_num_img)
+        try:
+            name_publication = driver.find_element(By.XPATH, name_publication_path).get_attribute('innerHTML')
+        except:
+            print("No such name_publication element")
+
+        try:
+            price = driver.find_element(By.XPATH, price_path).get_attribute('innerHTML')
+        except:
+            print("No such price element")
+
+        try:
+            sqr_meter = driver.find_element(By.XPATH, sqr_meter_path).get_attribute('innerHTML')
+        except:
+            print("No such sqr_meter element")
+
+        try:
+            number_bedroom = driver.find_element(By.XPATH, number_bedroom_path).get_attribute('innerHTML')
+        except:
+            print("No such number_bedroom element")
+
+        try:
+            number_bathroom = driver.find_element(By.XPATH, number_bathroom_path).get_attribute('innerHTML')
+        except:
+            print("No such number_bathroom element")
+
+        try:
+            address = driver.find_element(By.XPATH, address_path).get_attribute('innerHTML')
+        except:
+            print("No such address element")
+
+        try:
+            parking = driver.find_element(By.XPATH, parking_path).get_attribute('innerHTML')
+        except:
+            print("No such parking element")
+
+        try:
+            description = driver.find_element(By.XPATH, description_path).get_attribute('innerHTML')
+        except:
+            print("No such description element")
+
+        try:
+            contact_name = driver.find_element(By.XPATH, contact_name_path).get_attribute('innerHTML')
+        except:
+            print("No such contact_name element")
+
+        try:
+            date_publication = driver.find_element(By.XPATH, date_publication_path).get_attribute('innerHTML')
+        except:
+            print("No such date_publication element")
+
+        try:
+            phone_btn = driver.find_element(By.XPATH, phone_btn_path)
+            phone_btn.click()
+            time.sleep(10)
+            phone_num_img = driver.find_element(By.XPATH, phone_num_path)
+            phone_number = get_str_from_img(phone_num_img)
+        except:
+            print("Phone Number Error")
+        
+        print(phone_number)
         
         name_publications.append(name_publication)
         prices.append(price)
@@ -103,14 +146,14 @@ def scrape_eachlink(link):
         number_bathrooms.append(number_bathroom)
         addresses.append(address)
         parkings.append(parking)
-        cellars.append(cellar)
+        descriptions.append(description)
         contact_names.append(contact_name)
         phone_numbers.append(phone_number)
         date_publications.append(date_publication)
         add_expenses.append(add_expense)
 
     except:
-        print("error")
+        print("cannot reach this url")
 
 def get_str_from_img(img_element):
     # Get the location and size of the image element
@@ -137,25 +180,28 @@ def get_str_from_img(img_element):
     letters = pytesseract.image_to_string(img)
 
     # Print the extracted letters
-    print(letters)
     return letters
     
 def main():
     log_in()
     links_array = []
-    last_page_num = 39
+    last_page_num = 2
     
     for page_num in range(1, last_page_num):
+        print(page_num)
         page_url = TARGET_URL + "&pagina=" + str(page_num)
         driver.get(page_url)
-        time.sleep(20)
+        time.sleep(25)
 
         # Scrape the data from the current page
+    
         list = driver.find_element(By.XPATH, '/html/body/app-root/listing-index/listing-main/div[2]/div/div[2]/listing-result-list/listing-result-list-content/div/div/div')
+        print(list)
         lists = list.find_elements(By.TAG_NAME, 'listing-result-ad')
         for i in range(len(lists)):
             list_item = lists[i]
             link = list_item.find_element(By.TAG_NAME, 'a').get_attribute('href')
+            print(link)
             links_array.append(link)
 
     for j in range(len(links_array)):
@@ -163,7 +209,7 @@ def main():
         scrape_eachlink(link)
     
     #scrape_eachlink("https://new.yapo.cl/inmuebles/pieza-en-san-miguel_86589121")
-    df = pd.DataFrame({'Name publication': name_publications, 'prices': prices, 'sqr meters': sqr_meters, 'number of bedrooms': number_bedrooms, 'number of bathrooms': number_bathrooms, 'address': addresses, 'parking': parkings, 'cellar': cellars, 'contact name': contact_names, 'phone number': phone_numbers, 'date of publication': date_publications, 'additional expenses': add_expenses})  # Create a DF with the lists
+    df = pd.DataFrame({'Name publication': name_publications, 'prices': prices, 'sqr meters': sqr_meters, 'number of bedrooms': number_bedrooms, 'number of bathrooms': number_bathrooms, 'address': addresses, 'parking': parkings, 'description': descriptions, 'contact name': contact_names, 'phone number': phone_numbers, 'date of publication': date_publications, 'additional expenses': add_expenses})  # Create a DF with the lists
 
     with pd.ExcelWriter('result.xlsx') as writer:
         df.to_excel(writer, sheet_name='Sheet1')
