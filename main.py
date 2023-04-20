@@ -15,7 +15,7 @@ profile_id = fnGetUUID()
 port = get_debug_port(profile_id)
 driver = get_webdriver(port)
 driver.maximize_window()
-time.sleep(30)
+time.sleep(5)
 
 name_publications = []
 prices = []
@@ -42,6 +42,10 @@ phone_btn_path = "/html/body/app-root/adview-index/div/div[2]/div/div[2]/div/adv
 phone_num_path = "/html/body/app-root/adview-index/div/div[2]/div/div[2]/div/adview-publisher/div/div[1]/adview-publisher-button/adview-phone-button/div/img[2]"
 date_publication_path = "/html/body/app-root/adview-index/div/div[2]/div/div[1]/div[1]/adview-price-info/div/div[2]/div[2]/p"
 
+def start():
+    driver = get_webdriver(port)
+    driver.maximize_window()
+
 def log_in():
     driver.get(LOGIN_URL)
     time.sleep(10)
@@ -61,7 +65,6 @@ def log_in():
 def scrape_eachlink(link):
     print(link)
     
-    
     name_publication = ""
     price = ""
     sqr_meter = ""
@@ -73,10 +76,10 @@ def scrape_eachlink(link):
     contact_name = ""
     phone_number = ""
     date_publication = ""
-           
+               
     try:
         driver.get(link)
-        time.sleep(5)
+        time.sleep(20)
         
         try:
             name_publication = driver.find_element(By.XPATH, name_publication_path).get_attribute('innerHTML')
@@ -150,8 +153,8 @@ def scrape_eachlink(link):
         contact_names.append(contact_name)
         phone_numbers.append(phone_number)
         date_publications.append(date_publication)
-        add_expenses.append(add_expense)
-
+        
+        time.sleep(10)
     except:
         print("cannot reach this url")
 
@@ -184,37 +187,43 @@ def get_str_from_img(img_element):
     
 def main():
     log_in()
-    links_array = []
     last_page_num = 2
-    
+    count = 0
+
     for page_num in range(1, last_page_num):
         print(page_num)
+        links_array = []
         page_url = TARGET_URL + "&pagina=" + str(page_num)
         driver.get(page_url)
-        time.sleep(25)
+        time.sleep(10)
 
         # Scrape the data from the current page
     
         list = driver.find_element(By.XPATH, '/html/body/app-root/listing-index/listing-main/div[2]/div/div[2]/listing-result-list/listing-result-list-content/div/div/div')
-        print(list)
         lists = list.find_elements(By.TAG_NAME, 'listing-result-ad')
+        
         for i in range(len(lists)):
             list_item = lists[i]
             link = list_item.find_element(By.TAG_NAME, 'a').get_attribute('href')
-            print(link)
             links_array.append(link)
+            
+        for j in range(len(links_array)):
+            link = links_array[j]
+            count += 1
+            scrape_eachlink(link)
+            if(count == 8):
+                count = 0
+                print(count)
+                continue
+            else:
+                continue
 
-    for j in range(len(links_array)):
-        link = links_array[j]
-        scrape_eachlink(link)
-    
-    #scrape_eachlink("https://new.yapo.cl/inmuebles/pieza-en-san-miguel_86589121")
-    df = pd.DataFrame({'Name publication': name_publications, 'prices': prices, 'sqr meters': sqr_meters, 'number of bedrooms': number_bedrooms, 'number of bathrooms': number_bathrooms, 'address': addresses, 'parking': parkings, 'description': descriptions, 'contact name': contact_names, 'phone number': phone_numbers, 'date of publication': date_publications, 'additional expenses': add_expenses})  # Create a DF with the lists
+        df = pd.DataFrame({'Name publication': name_publications, 'prices': prices,
+                           'sqr meters': sqr_meters, 'number of bedrooms': number_bedrooms, 'number of bathrooms': number_bathrooms, 'address': addresses, 'parking': parkings, 'description': descriptions, 'contact name': contact_names, 'phone number': phone_numbers, 'date of publication': date_publications})  # Create a DF with the lists
 
-    with pd.ExcelWriter('result.xlsx') as writer:
-        df.to_excel(writer, sheet_name='Sheet1')
-
-
+        with pd.ExcelWriter('result.xlsx') as writer:
+            df.to_excel(writer, sheet_name='Sheet1')
+        
 if __name__ == '__main__':
     main()
 
