@@ -4,7 +4,6 @@ from selenium.webdriver.common.by import By
 import time
 import pandas as pd
 import urllib.request
-import cv2
 import pytesseract
 from PIL import Image
 from io import BytesIO
@@ -42,18 +41,30 @@ phone_btn_path = "/html/body/app-root/adview-index/div/div[2]/div/div[2]/div/adv
 phone_num_path = "/html/body/app-root/adview-index/div/div[2]/div/div[2]/div/adview-publisher/div/div[1]/adview-publisher-button/adview-phone-button/div/img[2]"
 date_publication_path = "/html/body/app-root/adview-index/div/div[2]/div/div[1]/div[1]/adview-price-info/div/div[2]/div[2]/p"
 
+emails = ["tomasdd20052005@gmail.com", "r.t.swanstonn@gmail.com"]
+passwords = ["tomas2005", "jbp199161223"]
+
 def start():
     driver = get_webdriver(port)
     driver.maximize_window()
 
-def log_in():
+def delete_history():
+    # Clear the cookies
+    driver.delete_all_cookies()
+
+    # Clear the cache
+    driver.execute_script("window.localStorage.clear();")
+    driver.execute_script("window.sessionStorage.clear();")
+    driver.execute_script("window.location.reload();")
+
+def log_in(index):
     driver.get(LOGIN_URL)
     time.sleep(10)
     email_field = driver.find_element(By.ID, 'email_input')
     password_field = driver.find_element(By.ID, 'password_input')
     
-    email = "tomasdd20052005@gmail.com"
-    password = "tomas2005"
+    email = emails[index]
+    password = passwords[index]
     
     email_field.send_keys(email)
     password_field.send_keys(password)
@@ -63,8 +74,6 @@ def log_in():
     time.sleep(10)
     
 def scrape_eachlink(link):
-    print(link)
-    
     name_publication = ""
     price = ""
     sqr_meter = ""
@@ -76,10 +85,20 @@ def scrape_eachlink(link):
     contact_name = ""
     phone_number = ""
     date_publication = ""
-               
+
+    # driver.get(link)
+    # time.sleep(20)      
+
+    # phone_btn = driver.find_element(By.XPATH, phone_btn_path)
+    # phone_btn.click()
+    # time.sleep(10)
+    # phone_num_img = driver.find_element(By.XPATH, phone_num_path)
+    # phone_number = get_str_from_img(phone_num_img)
+    # print(phone_number)
+
     try:
         driver.get(link)
-        time.sleep(20)
+        time.sleep(10)
         
         try:
             name_publication = driver.find_element(By.XPATH, name_publication_path).get_attribute('innerHTML')
@@ -93,26 +112,38 @@ def scrape_eachlink(link):
 
         try:
             sqr_meter = driver.find_element(By.XPATH, sqr_meter_path).get_attribute('innerHTML')
+            if(sqr_meter.find("span") != -1):
+                sqr_meter = ""
         except:
             print("No such sqr_meter element")
 
         try:
             number_bedroom = driver.find_element(By.XPATH, number_bedroom_path).get_attribute('innerHTML')
+            if(number_bedroom.find("span") != -1):
+                number_bedroom = ""
         except:
             print("No such number_bedroom element")
 
         try:
             number_bathroom = driver.find_element(By.XPATH, number_bathroom_path).get_attribute('innerHTML')
+            if(number_bathroom.find("span") != -1):
+                number_bathroom = ""
         except:
             print("No such number_bathroom element")
 
         try:
             address = driver.find_element(By.XPATH, address_path).get_attribute('innerHTML')
+            address = address.replace('<span _ngcontent-serverapp-c54="" class="ng-star-inserted">', "")
+            address = address.replace('</span>', "")
+            address = address.replace("<!---->", "")
+            print(address)
         except:
             print("No such address element")
 
         try:
             parking = driver.find_element(By.XPATH, parking_path).get_attribute('innerHTML')
+            if(parking.find("span") != -1):
+                parking = ""
         except:
             print("No such parking element")
 
@@ -137,10 +168,9 @@ def scrape_eachlink(link):
             time.sleep(10)
             phone_num_img = driver.find_element(By.XPATH, phone_num_path)
             phone_number = get_str_from_img(phone_num_img)
+            print(phone_number)
         except:
             print("Phone Number Error")
-        
-        print(phone_number)
         
         name_publications.append(name_publication)
         prices.append(price)
@@ -154,7 +184,7 @@ def scrape_eachlink(link):
         phone_numbers.append(phone_number)
         date_publications.append(date_publication)
         
-        time.sleep(10)
+        time.sleep(500)
     except:
         print("cannot reach this url")
 
@@ -185,17 +215,24 @@ def get_str_from_img(img_element):
     # Print the extracted letters
     return letters
     
+def save_into_excelfile():
+    df = pd.DataFrame({'Name publication': name_publications, 'prices': prices,
+                           'sqr meters': sqr_meters, 'number of bedrooms': number_bedrooms, 'number of bathrooms': number_bathrooms, 'address': addresses, 'parking': parkings, 'description': descriptions, 'contact name': contact_names, 'phone number': phone_numbers, 'date of publication': date_publications})  # Create a DF with the lists
+
+    with pd.ExcelWriter('result.xlsx') as writer:
+        df.to_excel(writer, sheet_name='Sheet1')
+
 def main():
-    log_in()
+    index = 0
+    log_in(index)
     last_page_num = 2
     count = 0
 
     for page_num in range(1, last_page_num):
-        print(page_num)
         links_array = []
         page_url = TARGET_URL + "&pagina=" + str(page_num)
         driver.get(page_url)
-        time.sleep(10)
+        time.sleep(15)
 
         # Scrape the data from the current page
     
@@ -211,18 +248,15 @@ def main():
             link = links_array[j]
             count += 1
             scrape_eachlink(link)
+            save_into_excelfile()
+
             if(count == 8):
                 count = 0
-                print(count)
-                continue
-            else:
-                continue
-
-        df = pd.DataFrame({'Name publication': name_publications, 'prices': prices,
-                           'sqr meters': sqr_meters, 'number of bedrooms': number_bedrooms, 'number of bathrooms': number_bathrooms, 'address': addresses, 'parking': parkings, 'description': descriptions, 'contact name': contact_names, 'phone number': phone_numbers, 'date of publication': date_publications})  # Create a DF with the lists
-
-        with pd.ExcelWriter('result.xlsx') as writer:
-            df.to_excel(writer, sheet_name='Sheet1')
+                index += 1
+                if(index == len(emails)):
+                    index = 0
+                delete_history()
+                log_in(index)
         
 if __name__ == '__main__':
     main()
