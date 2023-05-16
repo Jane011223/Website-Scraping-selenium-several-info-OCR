@@ -1,4 +1,4 @@
-# Website-Scraping-selenium-apartment
+# Scraping with Several Info && OCR
 This is the scraping project using selenium python of the website.
 The website link is https://new.yapo.cl/region-metropolitana/inmuebles/inmuebles/arrendar?precio=--uf&tipo-anuncio=persona&comuna=las-condes,nunoa,providencia,san-miguel
 This project includes ocr to get phone number from the img.
